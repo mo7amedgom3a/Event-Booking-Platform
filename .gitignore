@@ -1,0 +1,13 @@
+.env
+# Python
+__pycache__/
+.venv
+venv/
+ENV/
+env/
+# Next.js
+.next/
+out/
+build/
+node_modules/
+.vscode/

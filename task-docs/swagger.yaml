@@ -1,0 +1,812 @@
+openapi: 3.0.3
+info:
+  title: Event Booking System API
+  description: |
+    Backend assessment task for event booking management system.
+    
+    **Requirements:**
+    - Implement all endpoints specified below
+    - Use either Python (Flask/FastAPI) or Node.js (Express/NestJS)
+    - Use any SQL/NoSQL database of your choice
+    - Implement proper error handling and validation
+    - Add authentication/authorization using JWT
+    - Include API documentation (README.md)
+    - Write at least basic unit tests for critical endpoints
+    - Use Docker for containerization (docker-compose.yml)
+    - Follow RESTful best practices
+    
+    **Evaluation Criteria:**
+    - Code quality and organization
+    - API design and RESTful principles
+    - Error handling and validation
+    - Database schema design
+    - Authentication/Authorization implementation
+    - Documentation quality
+    - Test coverage
+    - Docker setup
+    
+    **Bonus Points:**
+    - Rate limiting
+    - Caching strategy
+    - Logging and monitoring
+    - API versioning
+    - Swagger/OpenAPI documentation generation
+  version: 1.0.0
+  contact:
+    email: [email protected]
+
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Users
+    description: User management
+  - name: Events
+    description: Event management
+  - name: Bookings
+    description: Booking management
+  - name: Categories
+    description: Event category management
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid request"
+        message:
+          type: string
+          example: "Detailed error message"
+        statusCode:
+          type: integer
+          example: 400
+          
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        email:
+          type: string
+          format: email
+          example: "[email protected]"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        role:
+          type: string
+          enum: [user, organizer, admin]
+          example: "user"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Tech Conference 2024"
+        description:
+          type: string
+          example: "Annual technology conference"
+        categoryId:
+          type: string
+          format: uuid
+        organizerId:
+          type: string
+          format: uuid
+        location:
+          type: object
+          properties:
+            address:
+              type: string
+              example: "123 Main St, Cairo, Egypt"
+            city:
+              type: string
+              example: "Cairo"
+            country:
+              type: string
+              example: "Egypt"
+            coordinates:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  example: 30.0444
+                longitude:
+                  type: number
+                  example: 31.2357
+        startDateTime:
+          type: string
+          format: date-time
+        endDateTime:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          example: 100
+        availableSeats:
+          type: integer
+          example: 75
+        price:
+          type: number
+          format: decimal
+          example: 50.00
+        currency:
+          type: string
+          example: "USD"
+        status:
+          type: string
+          enum: [draft, published, cancelled, completed]
+          example: "published"
+        imageUrl:
+          type: string
+          example: "https://example.com/event.jpg"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        numberOfSeats:
+          type: integer
+          example: 2
+        totalAmount:
+          type: number
+          format: decimal
+          example: 100.00
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled, refunded]
+          example: "confirmed"
+        paymentStatus:
+          type: string
+          enum: [pending, paid, failed, refunded]
+          example: "paid"
+        bookingReference:
+          type: string
+          example: "BK-2024-001234"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+          
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Technology"
+        slug:
+          type: string
+          example: "technology"
+        description:
+          type: string
+          example: "Tech related events"
+        createdAt:
+          type: string
+          format: date-time
+
+paths:
+  # Authentication
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - firstName
+                - lastName
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                role:
+                  type: string
+                  enum: [user, organizer]
+                  default: user
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already exists
+          
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+          
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  # Events
+  /events:
+    get:
+      tags:
+        - Events
+      summary: Get all events with filtering and pagination
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: categoryId
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [published, cancelled, completed]
+        - name: search
+          in: query
+          description: Search in title and description
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [startDateTime, price, createdAt]
+            default: startDateTime
+        - name: order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Event'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      totalPages:
+                        type: integer
+                        
+    post:
+      tags:
+        - Events
+      summary: Create a new event (organizers only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - categoryId
+                - startDateTime
+                - endDateTime
+                - capacity
+                - price
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                categoryId:
+                  type: string
+                location:
+                  type: object
+                  required:
+                    - address
+                    - city
+                    - country
+                  properties:
+                    address:
+                      type: string
+                    city:
+                      type: string
+                    country:
+                      type: string
+                    coordinates:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                        longitude:
+                          type: number
+                startDateTime:
+                  type: string
+                  format: date-time
+                endDateTime:
+                  type: string
+                  format: date-time
+                capacity:
+                  type: integer
+                price:
+                  type: number
+                currency:
+                  type: string
+                  default: USD
+                imageUrl:
+                  type: string
+                status:
+                  type: string
+                  enum: [draft, published]
+                  default: draft
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - organizer role required
+          
+  /events/{eventId}:
+    get:
+      tags:
+        - Events
+      summary: Get event by ID
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          description: Event not found
+          
+    put:
+      tags:
+        - Events
+      summary: Update event (organizer/owner only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                categoryId:
+                  type: string
+                location:
+                  type: object
+                startDateTime:
+                  type: string
+                  format: date-time
+                endDateTime:
+                  type: string
+                  format: date-time
+                capacity:
+                  type: integer
+                price:
+                  type: number
+                status:
+                  type: string
+                  enum: [draft, published, cancelled]
+                imageUrl:
+                  type: string
+      responses:
+        '200':
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Event not found
+          
+    delete:
+      tags:
+        - Events
+      summary: Delete event (organizer/owner only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Event deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Event not found
+
+  # Bookings
+  /bookings:
+    get:
+      tags:
+        - Bookings
+      summary: Get user's bookings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled]
+      responses:
+        '200':
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          description: Unauthorized
+          
+    post:
+      tags:
+        - Bookings
+      summary: Create a new booking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - eventId
+                - numberOfSeats
+              properties:
+                eventId:
+                  type: string
+                numberOfSeats:
+                  type: integer
+                  minimum: 1
+      responses:
+        '201':
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Invalid input or insufficient seats
+        '401':
+          description: Unauthorized
+        '404':
+          description: Event not found
+          
+  /bookings/{bookingId}:
+    get:
+      tags:
+        - Bookings
+      summary: Get booking details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Booking not found
+          
+    delete:
+      tags:
+        - Bookings
+      summary: Cancel booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Booking cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Booking not found
+
+  # Categories
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+                  
+    post:
+      tags:
+        - Categories
+      summary: Create category (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - admin role required
+
+  # Organizer specific endpoints
+  /organizer/events:
+    get:
+      tags:
+        - Events
+      summary: Get organizer's own events
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of organizer's events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - organizer role required
+
+  /organizer/events/{eventId}/bookings:
+    get:
+      tags:
+        - Bookings
+      summary: Get all bookings for an event (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of event bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Event not found
