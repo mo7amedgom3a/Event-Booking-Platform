@@ -1,4 +1,13 @@
 # entrypoint for the backend API
 
+from fastapi import FastAPI
+import uvicorn
+app = FastAPI()
+
+@app.get("/v1/health")
+async def health_check():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
-    print("Run the API server here")
+    
+    uvicorn.run(app, host="0.0.0.0", port=8000)
