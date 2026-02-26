@@ -8,3 +8,4 @@ pydantic-settings
 alembic
 python-jose[cryptography]
 passlib[bcrypt]
+pyyaml

@@ -1,25 +1,27 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from uuid import UUID
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from app.models.event import EventStatus
+
+class Location(BaseModel):
+    address: str
+    city: str
+    country: str
+    coordinates: Optional[dict] = None
 
 class EventBase(BaseModel):
     title: str
     description: str
     category_id: UUID
-    location_address: str
-    location_city: str
-    location_country: str
-    location_lat: Optional[float] = None
-    location_lon: Optional[float] = None
+    location: Location
     start_date_time: datetime
     end_date_time: datetime
-    capacity: int
-    price: float
+    capacity: int = Field(..., ge=0)
+    price: float = Field(..., ge=0)
     currency: str = "USD"
-    status: EventStatus = EventStatus.draft
     image_url: Optional[str] = None
+    status: EventStatus = EventStatus.draft
 
 class EventCreate(EventBase):
     pass
@@ -28,16 +30,11 @@ class EventUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     category_id: Optional[UUID] = None
-    location_address: Optional[str] = None
-    location_city: Optional[str] = None
-    location_country: Optional[str] = None
-    location_lat: Optional[float] = None
-    location_lon: Optional[float] = None
+    location: Optional[Location] = None
     start_date_time: Optional[datetime] = None
     end_date_time: Optional[datetime] = None
     capacity: Optional[int] = None
     price: Optional[float] = None
-    currency: Optional[str] = None
     status: Optional[EventStatus] = None
     image_url: Optional[str] = None
 
@@ -49,3 +46,7 @@ class EventResponse(EventBase):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class EventListResponse(BaseModel):
+    events: List[EventResponse]
+    pagination: dict
