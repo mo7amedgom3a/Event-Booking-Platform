@@ -22,19 +22,19 @@ def get_mock_booking(booking_id: uuid.UUID = None) -> BookingResponse:
     )
 
 @router.get("", response_model=list[BookingResponse])
-def get_user_bookings(status: BookingStatus = None):
+async def get_user_bookings(status: BookingStatus = None):
     return [get_mock_booking()]
 
 @router.post("", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
-def create_booking(booking_in: BookingCreate):
+async def create_booking(booking_in: BookingCreate):
     return get_mock_booking()
 
 @router.get("/{booking_id}", response_model=BookingResponse)
-def get_booking(booking_id: uuid.UUID):
+async def get_booking(booking_id: uuid.UUID):
     return get_mock_booking(booking_id)
 
 @router.delete("/{booking_id}", response_model=BookingResponse)
-def cancel_booking(booking_id: uuid.UUID):
+async def cancel_booking(booking_id: uuid.UUID):
     mock = get_mock_booking(booking_id)
     mock.status = BookingStatus.cancelled
     return mock

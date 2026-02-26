@@ -7,7 +7,7 @@ from app.models.user import UserRole
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate):
+async def register(user_in: UserCreate):
     mock_user = UserResponse(
         id=uuid.uuid4(),
         email=user_in.email,
@@ -20,7 +20,7 @@ def register(user_in: UserCreate):
     return {"user": mock_user, "token": "mock.jwt.token"}
 
 @router.post("/login", response_model=TokenResponse)
-def login(credentials: UserLogin):
+async def login(credentials: UserLogin):
     mock_user = UserResponse(
         id=uuid.uuid4(),
         email=credentials.email,
@@ -33,7 +33,7 @@ def login(credentials: UserLogin):
     return {"user": mock_user, "token": "mock.jwt.token"}
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user():
+async def get_current_user():
     return UserResponse(
         id=uuid.uuid4(),
         email="user@example.com",

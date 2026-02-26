@@ -17,9 +17,9 @@ def get_mock_category(category_id: uuid.UUID = None) -> CategoryResponse:
     )
 
 @router.get("", response_model=list[CategoryResponse])
-def get_categories():
+async def get_categories():
     return [get_mock_category(), get_mock_category()]
 
 @router.post("", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
-def create_category(category_in: CategoryCreate):
+async def create_category(category_in: CategoryCreate):
     return get_mock_category()

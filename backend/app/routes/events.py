@@ -29,7 +29,7 @@ def get_mock_event(event_id: uuid.UUID = None) -> EventResponse:
     )
 
 @router.get("", response_model=EventListResponse)
-def get_events(
+async def get_events(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=100),
     city: Optional[str] = None,
@@ -47,17 +47,17 @@ def get_events(
     }
 
 @router.get("/{event_id}", response_model=EventResponse)
-def get_event(event_id: uuid.UUID):
+async def get_event(event_id: uuid.UUID):
     return get_mock_event(event_id)
 
 @router.post("", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
-def create_event(event_in: EventCreate):
+async def create_event(event_in: EventCreate):
     return get_mock_event()
 
 @router.put("/{event_id}", response_model=EventResponse)
-def update_event(event_id: uuid.UUID, event_in: EventUpdate):
+async def update_event(event_id: uuid.UUID, event_in: EventUpdate):
     return get_mock_event(event_id)
 
 @router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_event(event_id: uuid.UUID):
+async def delete_event(event_id: uuid.UUID):
     return None
