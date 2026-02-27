@@ -1,4 +1,5 @@
-from pydantic import BaseModel, EmailStr, ConfigDict, Field
+from pydantic import EmailStr, ConfigDict, Field
+from app.schemas.base import AppBaseModel as BaseModel
 from uuid import UUID
 from datetime import datetime
 from app.models.user import UserRole
@@ -25,10 +26,10 @@ class UserResponse(UserBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-class TokenResponse(BaseModel):
-    user: UserResponse
-    token: str
-
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class TokenResponse(BaseModel):
+    user: UserResponse
+    token: Token

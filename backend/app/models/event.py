@@ -40,3 +40,15 @@ class Event(Base, TimestampMixin):
     category: Mapped["Category"] = relationship("Category", back_populates="events")
     organizer: Mapped["User"] = relationship("User", back_populates="events")
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="event", cascade="all, delete-orphan")
+
+    @property
+    def location(self):
+        return {
+            "address": self.location_address,
+            "city": self.location_city,
+            "country": self.location_country,
+            "coordinates": {
+                "latitude": float(self.location_lat) if self.location_lat is not None else None,
+                "longitude": float(self.location_lon) if self.location_lon is not None else None,
+            } if (self.location_lat is not None or self.location_lon is not None) else None
+        }

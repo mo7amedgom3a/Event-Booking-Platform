@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+from app.schemas.base import AppBaseModel as BaseModel
 from uuid import UUID
 from datetime import datetime
 from typing import Optional, List

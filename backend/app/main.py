@@ -13,12 +13,24 @@ from fastapi.openapi.docs import get_swagger_ui_html
 # Import routers
 from app.routes import auth, events, bookings, categories, organizer
 
+from contextlib import asynccontextmanager
+from app.database import AsyncSessionLocal
+from app.sb import ServiceBase
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize global database session and attach SB object
+    async with AsyncSessionLocal() as session:
+        app.state.sb = ServiceBase(session)
+        yield
+
 app = FastAPI(
     title="Event Booking System API",
     version="1.0.0",
     docs_url=None, # Disable default docs so we can serve custom yaml
     redoc_url=None,
-    openapi_url=None
+    openapi_url=None,
+    lifespan=lifespan
 )
 
 # Load the custom swagger.yaml
@@ -36,6 +48,9 @@ custom_openapi["servers"] = [
     }
 ]
 
+# Enable global security so Swagger sends the token in every request
+custom_openapi["security"] = [{"bearerAuth": []}]
+
 @app.get("/api/v1/openapi.json", include_in_schema=False)
 async def get_openapi_endpoint():
     return custom_openapi
@@ -47,6 +62,14 @@ async def custom_swagger_ui_html():
         title="Event Booking System API - Swagger UI",
     )
 
+from app.middleware.error_handler import ErrorHandlingMiddleware
+from app.middleware.security import SecurityHeadersMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.auth import AuthMiddleware
+
+app.add_middleware(AuthMiddleware)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=100)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -54,6 +77,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(ErrorHandlingMiddleware)
 
 # Include routers with version prefix
 api_prefix = "/api/v1"

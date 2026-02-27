@@ -39,11 +39,13 @@ class EventRepository(BaseRepository[Event]):
             
         query = query.offset(skip).limit(limit)
         result = await self.session.execute(query)
-        return list(result.scalars().all())
+        results = result.scalars().all()
+        return list(results)
 
     async def get_by_organizer(self, organizer_id: Any, status: Optional[str] = None) -> list[Event]:
         query = select(Event).filter(Event.organizer_id == organizer_id)
         if status:
             query = query.filter(Event.status == status)
         result = await self.session.execute(query)
-        return list(result.scalars().all())
+        results = result.scalars().all()
+        return list(results)
