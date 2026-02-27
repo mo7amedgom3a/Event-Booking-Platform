@@ -7,6 +7,6 @@ asyncpg
 pydantic[email]
 pydantic-settings
 alembic
-python-jose[cryptography]
-passlib[bcrypt]
+PyJWT
+bcrypt
 pyyaml
