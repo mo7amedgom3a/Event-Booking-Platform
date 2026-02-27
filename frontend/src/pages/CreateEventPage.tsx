@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,17 @@ import { Spinner } from '@/components/common/Loading';
 import { eventService, MOCK_CATEGORIES } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix marker icon issue in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const CreateEventPage = () => {
   const { id } = useParams();
@@ -22,7 +33,7 @@ const CreateEventPage = () => {
   const [form, setForm] = useState({
     title: '', description: '', category: 'c1', tags: '',
     date: '', endDate: '', city: '', venue: '', address: '',
-    price: 0, totalSeats: 100, image: '',
+    price: 0, totalSeats: 100, image: '', lat: 52.3742, lng: 4.9123 // default Amsterdam
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -35,6 +46,7 @@ const CreateEventPage = () => {
             tags: e.tags.join(', '), date: e.date.slice(0, 16), endDate: e.endDate.slice(0, 16),
             city: e.location.city, venue: e.location.venue, address: e.location.address,
             price: e.price, totalSeats: e.totalSeats, image: e.image,
+            lat: e.location.lat || 52.3742, lng: e.location.lng || 4.9123
           });
         }
         setLoadingEvent(false);
@@ -74,7 +86,7 @@ const CreateEventPage = () => {
         tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
         date: new Date(form.date).toISOString(),
         endDate: new Date(form.endDate).toISOString(),
-        location: { city: form.city, venue: form.venue, address: form.address },
+        location: { city: form.city, venue: form.venue, address: form.address, lat: form.lat, lng: form.lng },
         price: Number(form.price),
         totalSeats: Number(form.totalSeats),
         image: form.image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800',
@@ -106,6 +118,15 @@ const CreateEventPage = () => {
       {error && <p className="text-destructive text-xs mt-1">{error}</p>}
     </div>
   );
+
+  const LocationPicker = () => {
+    useMapEvents({
+      click(e) {
+        setForm(f => ({ ...f, lat: e.latlng.lat, lng: e.latlng.lng }));
+      },
+    });
+    return form.lat && form.lng ? <Marker position={[form.lat, form.lng]} /> : null;
+  };
 
   return (
     <div className="container py-8 max-w-2xl">
@@ -159,6 +180,22 @@ const CreateEventPage = () => {
           <Field label="Address">
             <Input value={form.address} onChange={e => set('address', e.target.value)} className="bg-surface" placeholder="Oosterdok 2, Amsterdam" />
           </Field>
+          <div>
+            <Label>Map Location (Click to adjust)</Label>
+            <div className="mt-2 h-[300px] rounded-md overflow-hidden border border-border">
+              <MapContainer center={[form.lat, form.lng]} zoom={13} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+                <TileLayer
+                  attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+                <TileLayer
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                />
+                <LocationPicker />
+              </MapContainer>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Lat: {form.lat.toFixed(4)}, Lng: {form.lng.toFixed(4)}</p>
+          </div>
         </section>
 
         {/* Tickets */}

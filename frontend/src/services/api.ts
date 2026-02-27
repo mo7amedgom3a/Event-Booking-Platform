@@ -21,6 +21,8 @@ export interface EventLocation {
   city: string;
   venue: string;
   address: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface Event {
@@ -89,19 +91,19 @@ export const MOCK_CATEGORIES: Category[] = [
 let MOCK_EVENTS: Event[] = [
   {
     id: 'e1', title: 'React Summit 2025', description: 'The largest React conference in Europe. Join 500+ developers for three days of talks, workshops, and networking. Learn from industry leaders about the latest in React, Next.js, and the modern web ecosystem.', category: 'c1', date: '2025-09-15T09:00:00Z', endDate: '2025-09-17T18:00:00Z',
-    location: { city: 'Amsterdam', venue: 'NEMO Science Museum', address: 'Oosterdok 2, Amsterdam' }, price: 299, totalSeats: 500, bookedSeats: 342, image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['react', 'frontend', 'javascript'], status: 'published', popularity: 95,
+    location: { city: 'Amsterdam', venue: 'NEMO Science Museum', address: 'Oosterdok 2, Amsterdam', lat: 52.3742, lng: 4.9123 }, price: 299, totalSeats: 500, bookedSeats: 342, image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['react', 'frontend', 'javascript'], status: 'published', popularity: 95,
   },
   {
     id: 'e2', title: 'Jazz Under the Stars', description: 'An enchanting evening of live jazz music in the heart of Cairo. Featuring renowned musicians from across the Middle East and beyond. Enjoy gourmet food and drinks under the open sky.', category: 'c2', date: '2025-08-20T19:00:00Z', endDate: '2025-08-20T23:00:00Z',
-    location: { city: 'Cairo', venue: 'Al-Azhar Park', address: 'Salah Salem St, Cairo' }, price: 75, totalSeats: 300, bookedSeats: 280, image: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['jazz', 'live music', 'outdoor'], status: 'published', popularity: 88,
+    location: { city: 'Cairo', venue: 'Al-Azhar Park', address: 'Salah Salem St, Cairo', lat: 30.0416, lng: 31.2585 }, price: 75, totalSeats: 300, bookedSeats: 280, image: 'https://images.unsplash.com/photo-1415201364774-f6f0bb35f28f?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['jazz', 'live music', 'outdoor'], status: 'published', popularity: 88,
   },
   {
     id: 'e3', title: 'Premier League Watch Party', description: 'Watch the biggest Premier League matches live on a giant screen with fellow football fans. Food, drinks, and incredible atmosphere guaranteed.', category: 'c3', date: '2025-10-05T14:00:00Z', endDate: '2025-10-05T17:00:00Z',
-    location: { city: 'London', venue: 'The Sports Bar', address: '12 Kings Road, London' }, price: 0, totalSeats: 200, bookedSeats: 145, image: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['football', 'premier league', 'watch party'], status: 'published', popularity: 72,
+    location: { city: 'London', venue: 'The Sports Bar', address: '12 Kings Road, London', lat: 51.4886, lng: -0.1601 }, price: 0, totalSeats: 200, bookedSeats: 145, image: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['football', 'premier league', 'watch party'], status: 'published', popularity: 72,
   },
   {
     id: 'e4', title: 'Startup Pitch Night', description: 'An exclusive evening where 10 hand-picked startups pitch their ideas to a panel of top investors. Networking opportunities with VCs and angel investors.', category: 'c4', date: '2025-11-12T18:00:00Z', endDate: '2025-11-12T22:00:00Z',
-    location: { city: 'Dubai', venue: 'DIFC Innovation Hub', address: 'Gate Avenue, DIFC, Dubai' }, price: 150, totalSeats: 150, bookedSeats: 150, image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['startup', 'pitch', 'investors'], status: 'published', popularity: 90,
+    location: { city: 'Dubai', venue: 'DIFC Innovation Hub', address: 'Gate Avenue, DIFC, Dubai', lat: 25.2144, lng: 55.2811 }, price: 150, totalSeats: 150, bookedSeats: 150, image: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=800', organizerId: 'u2', organizerName: 'Bob Carter', tags: ['startup', 'pitch', 'investors'], status: 'published', popularity: 90,
   },
   {
     id: 'e5', title: 'Contemporary Art Exhibition', description: 'Explore groundbreaking contemporary art from emerging artists around the world. Interactive installations, guided tours, and artist meet-and-greets.', category: 'c5', date: '2025-09-01T10:00:00Z', endDate: '2025-09-30T18:00:00Z',

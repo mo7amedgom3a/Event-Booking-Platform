@@ -8,6 +8,17 @@ import { eventService, bookingService, Event, MOCK_CATEGORIES } from '@/services
 import { useAuth } from '@/context/AuthContext';
 import { formatDateTime, formatPrice, formatCurrency, getAvailabilityColor, isEventPast } from '@/utils/formatters';
 import { useToast } from '@/hooks/use-toast';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix marker icon issue in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -100,7 +111,21 @@ const EventDetailPage = () => {
             <div className="rounded-lg border border-border bg-card p-4 mb-6">
               <h3 className="font-body font-semibold mb-2">📍 Location</h3>
               <p className="text-foreground font-medium">{event.location.venue}</p>
-              <p className="text-muted-foreground text-sm">{event.location.address}</p>
+              <p className="text-muted-foreground text-sm mb-4">{event.location.address}</p>
+              {event.location.lat && event.location.lng && (
+                <div className="h-48 w-full rounded-md overflow-hidden border border-border">
+                  <MapContainer center={[event.location.lat, event.location.lng]} zoom={14} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer
+                      attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                    />
+                    <TileLayer
+                      url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+                    />
+                    <Marker position={[event.location.lat, event.location.lng]} />
+                  </MapContainer>
+                </div>
+              )}
             </div>
 
             {/* Organizer */}
