@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.user import UserRepository
-from app.schemas.user import UserCreate, UserLogin
+from app.schemas.user import UserCreate, UserLogin, UserUpdate
 from app.utils.jwt import get_password_hash, verify_password, create_access_token
 from app.models.user import User
 
@@ -56,3 +56,8 @@ class AuthService:
 
     async def get_all_users(self, skip: int = 0, limit: int = 100) -> list[User]:
         return await self.repo.get_all(skip=skip, limit=limit)
+
+    async def update_user_profile(self, user_id: str, user_in: UserUpdate) -> User:
+        user = await self.get_user_by_id(user_id)
+        update_data = user_in.model_dump(exclude_unset=True)
+        return await self.repo.update(user, update_data)

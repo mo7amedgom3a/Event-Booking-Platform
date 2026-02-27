@@ -14,8 +14,14 @@ class EventRepository(BaseRepository[Event]):
         limit: int = 10,
         city: Optional[str] = None,
         category_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
         status: Optional[str] = None,
         search: Optional[str] = None,
+        sort_by: Optional[str] = "startDateTime",
+        order: Optional[str] = "asc",
     ) -> list[Event]:
         query = select(Event)
         
@@ -33,9 +39,40 @@ class EventRepository(BaseRepository[Event]):
                     Event.description.ilike(f"%{search}%")
                 )
             )
+        if start_date:
+            from datetime import datetime
+            try:
+                dt = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
+                conditions.append(Event.start_date_time >= dt)
+            except ValueError:
+                pass
+        if end_date:
+            from datetime import datetime
+            try:
+                dt = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+                conditions.append(Event.start_date_time <= dt)
+            except ValueError:
+                pass
+        if min_price is not None:
+            conditions.append(Event.price >= min_price)
+        if max_price is not None:
+            conditions.append(Event.price <= max_price)
             
         if conditions:
             query = query.filter(and_(*conditions))
+            
+        if sort_by == "price":
+            sort_col = Event.price
+        elif sort_by == "popularity":
+            # Just fallback to start_date_time for now unless there's a specific popularity metric
+            sort_col = Event.start_date_time
+        else:
+            sort_col = Event.start_date_time
+
+        if order == "desc":
+            query = query.order_by(sort_col.desc())
+        else:
+            query = query.order_by(sort_col.asc())
             
         query = query.offset(skip).limit(limit)
         result = await self.session.execute(query)

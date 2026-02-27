@@ -5,11 +5,15 @@ from datetime import datetime
 from typing import Optional, List
 from app.models.event import EventStatus
 
+class Coordinates(BaseModel):
+    latitude: float
+    longitude: float
+
 class Location(BaseModel):
     address: str
     city: str
     country: str
-    coordinates: Optional[dict] = None
+    coordinates: Optional[Coordinates] = None
 
 class EventBase(BaseModel):
     title: str

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Depends
 from datetime import datetime, timezone
 import uuid
-from app.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse
+from app.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse, UserUpdate
 from app.models.user import UserRole
 from app.services.auth_service import AuthService
 from app.dependencies import get_auth_service, get_current_user
@@ -21,3 +21,11 @@ async def get_current_user_profile(
     auth_service: AuthService = Depends(get_auth_service)
 ):
     return await auth_service.get_user_by_id(current_user["id"])
+
+@router.put("/me", response_model=UserResponse)
+async def update_current_user_profile(
+    user_in: UserUpdate,
+    current_user: dict = Depends(get_current_user),
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    return await auth_service.update_user_profile(current_user["id"], user_in)

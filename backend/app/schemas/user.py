@@ -18,6 +18,11 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class UserUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+
+
 class UserResponse(UserBase):
     id: UUID
     role: UserRole

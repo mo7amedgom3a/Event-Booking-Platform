@@ -11,21 +11,25 @@ router = APIRouter(prefix="/events", tags=["Events"])
 
 @router.get("", response_model=EventListResponse)
 async def get_events(
-    page: int = Query(1, ge=1),
-    limit: int = Query(10, ge=1, le=100),
-    city: Optional[str] = None,
-    categoryId: Optional[str] = None,
-    startDate: Optional[str] = None,
-    endDate: Optional[str] = None,
-    status: Optional[str] = None,
-    search: Optional[str] = None,
-    sortBy: Optional[str] = "startDateTime",
-    order: Optional[str] = "asc",
-    service: EventService = Depends(get_event_service)
-):
+                 page: int = Query(1, ge=1),
+                 limit: int = Query(10, ge=1, le=100),
+                 city: Optional[str] = None,
+                 categoryId: Optional[str] = None,
+                 startDate: Optional[str] = None,
+                 endDate: Optional[str] = None,
+                 minPrice: Optional[float] = None,
+                 maxPrice: Optional[float] = None,
+                 status: Optional[str] = None,
+                 search: Optional[str] = None,
+                 sortBy: Optional[str] = "startDateTime",
+                 order: Optional[str] = "asc",
+                 service: EventService = Depends(get_event_service)
+                 ):
     skip = (page - 1) * limit
     events = await service.get_all_events(
-        skip=skip, limit=limit, city=city, category_id=categoryId, status=status, search=search
+        skip=skip, limit=limit, city=city, category_id=categoryId, status=status, search=search,
+        start_date=startDate, end_date=endDate, min_price=minPrice, max_price=maxPrice,
+        sort_by=sortBy, order=order
     )
     
     return {

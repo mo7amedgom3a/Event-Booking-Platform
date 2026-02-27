@@ -227,6 +227,21 @@ components:
         createdAt:
           type: string
           format: date-time
+          
+    EventStatisticsResponse:
+      type: object
+      properties:
+        total_bookings:
+          type: integer
+          example: 10
+        revenue:
+          type: number
+          format: decimal
+          example: 500.00
+        attendance_rate:
+          type: number
+          format: float
+          example: 80.5
 
 paths:
   # Authentication
@@ -336,6 +351,33 @@ paths:
         '401':
           description: Unauthorized
 
+    put:
+      tags:
+        - Authentication
+      summary: Update current user profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+      responses:
+        '200':
+          description: User profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
   # Events
   /events:
     get:
@@ -371,6 +413,16 @@ paths:
           schema:
             type: string
             format: date
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+            format: decimal
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+            format: decimal
         - name: status
           in: query
           schema:
@@ -804,6 +856,33 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Booking'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Event not found
+
+  /organizer/events/{eventId}/statistics:
+    get:
+      tags:
+        - Events
+      summary: Get statistics for an event (organizer only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Event statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventStatisticsResponse'
         '401':
           description: Unauthorized
         '403':
