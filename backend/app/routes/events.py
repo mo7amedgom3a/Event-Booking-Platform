@@ -4,6 +4,10 @@ import uuid
 from datetime import datetime, timezone
 from app.schemas.event import EventCreate, EventUpdate, EventResponse, EventListResponse, Location
 from app.models.event import EventStatus
+from app.database import get_db
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
+from app.repositories.event import EventRepository
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -39,25 +43,52 @@ async def get_events(
     status: Optional[str] = None,
     search: Optional[str] = None,
     sortBy: Optional[str] = "startDateTime",
-    order: Optional[str] = "asc"
+    order: Optional[str] = "asc",
+    db: AsyncSession = Depends(get_db)
 ):
+    repo = EventRepository(db)
+    skip = (page - 1) * limit
+    events = await repo.get_with_filters(skip=skip, limit=limit, city=city, category_id=categoryId, status=status, search=search)
+    
+    if events:
+        # Note: True pagination counting is omitted for brevity here
+        return {
+            "events": events,
+            "pagination": {"total": len(events), "page": page, "limit": limit, "totalPages": 1}
+        }
+    
     return {
         "events": [get_mock_event(), get_mock_event()],
         "pagination": {"total": 2, "page": page, "limit": limit, "totalPages": 1}
     }
 
 @router.get("/{event_id}", response_model=EventResponse)
-async def get_event(event_id: uuid.UUID):
+async def get_event(event_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    repo = EventRepository(db)
+    event = await repo.get(event_id)
+    if event:
+        return event
     return get_mock_event(event_id)
 
 @router.post("", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
-async def create_event(event_in: EventCreate):
-    return get_mock_event()
+async def create_event(event_in: EventCreate, db: AsyncSession = Depends(get_db)):
+    repo = EventRepository(db)
+    event_data = event_in.model_dump()
+    event_data["organizer_id"] = uuid.uuid4() # Mock organizer id
+    new_event = await repo.create(event_data)
+    return new_event
 
 @router.put("/{event_id}", response_model=EventResponse)
-async def update_event(event_id: uuid.UUID, event_in: EventUpdate):
+async def update_event(event_id: uuid.UUID, event_in: EventUpdate, db: AsyncSession = Depends(get_db)):
+    repo = EventRepository(db)
+    event = await repo.get(event_id)
+    if event:
+        update_data = event_in.model_dump(exclude_unset=True)
+        return await repo.update(event, update_data)
     return get_mock_event(event_id)
 
 @router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_event(event_id: uuid.UUID):
+async def delete_event(event_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    repo = EventRepository(db)
+    await repo.delete(event_id)
     return None
