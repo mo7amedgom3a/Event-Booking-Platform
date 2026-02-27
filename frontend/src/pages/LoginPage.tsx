@@ -1,0 +1,83 @@
+import { useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/common/Loading';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { validateEmail } from '@/utils/validators';
+
+const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs: Record<string, string> = {};
+    const emailErr = validateEmail(email);
+    if (emailErr) errs.email = emailErr;
+    if (!password) errs.password = 'Password is required';
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+
+    setLoading(true);
+    try {
+      await login(email, password);
+      toast({ title: `Welcome back! 👋` });
+      navigate(params.get('redirect') || '/');
+    } catch (err: any) {
+      toast({ title: 'Login failed', description: err.message, variant: 'destructive' });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 gradient-mesh">
+      <div className="w-full max-w-md rounded-lg border border-border bg-card p-8">
+        <h1 className="font-display text-2xl font-bold mb-1">Welcome Back</h1>
+        <p className="text-muted-foreground text-sm mb-6">Sign in to your account</p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={e => { setEmail(e.target.value); setErrors({}); }} placeholder="alice@example.com" className="bg-surface mt-1" />
+            {errors.email && <p className="text-destructive text-xs mt-1">{errors.email}</p>}
+          </div>
+          <div>
+            <Label>Password</Label>
+            <div className="relative mt-1">
+              <Input type={showPw ? 'text' : 'password'} value={password} onChange={e => { setPassword(e.target.value); setErrors({}); }} placeholder="••••••••" className="bg-surface pr-10" />
+              <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => setShowPw(!showPw)}>
+                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {errors.password && <p className="text-destructive text-xs mt-1">{errors.password}</p>}
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? <Spinner className="h-4 w-4" /> : 'Sign In'}
+          </Button>
+        </form>
+
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Don't have an account? <Link to="/register" className="text-primary hover:underline font-medium">Sign Up</Link>
+        </p>
+
+        <div className="mt-4 p-3 rounded-md bg-surface text-xs text-muted-foreground">
+          <p className="font-medium mb-1">Demo accounts:</p>
+          <p>alice@example.com / Password1 (User)</p>
+          <p>bob@example.com / Password1 (Organizer)</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;
