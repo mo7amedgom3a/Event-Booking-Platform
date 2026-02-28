@@ -143,6 +143,14 @@ export const eventService = {
     return (data.events || []).map(mapEvent).filter((e: Event) => e.organizerId === organizerId);
   },
 
+  async getOrganizerStatistics(eventId?: string): Promise<{ total_bookings: number, revenue: number, attendance_rate: number }> {
+    const url = eventId 
+      ? `${API_URL}/organizer/events/statistics?event_id=${eventId}`
+      : `${API_URL}/organizer/events/statistics`;
+    const res = await fetchWithCredentials(url, { headers: getHeaders() });
+    return handleResponse(res);
+  },
+
   async getCategories(): Promise<Category[]> {
     const res = await fetchWithCredentials(`${API_URL}/categories`, { headers: getHeaders() });
     const data = await handleResponse(res);

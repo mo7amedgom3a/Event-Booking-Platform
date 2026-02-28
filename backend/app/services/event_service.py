@@ -122,3 +122,24 @@ class EventService:
             "revenue": revenue,
             "attendance_rate": (total_bookings / event.capacity * 100) if event.capacity > 0 else 0
         }
+
+    async def get_global_statistics(self, current_user_id: uuid.UUID) -> dict:
+        events = await self.repo.get_by_organizer(str(current_user_id))
+        
+        total_bookings = 0
+        revenue = 0.0
+        total_capacity = 0
+        
+        for event in events:
+            bookings = await self.booking_repo.get_by_event(event.id)
+            valid_bookings = [b for b in bookings if b.status in (BookingStatus.confirmed, BookingStatus.pending)]
+            
+            total_bookings += sum(b.number_of_seats for b in valid_bookings)
+            revenue += sum(float(b.total_amount) for b in valid_bookings)
+            total_capacity += event.capacity
+            
+        return {
+            "total_bookings": total_bookings,
+            "revenue": revenue,
+            "attendance_rate": (total_bookings / total_capacity * 100) if total_capacity > 0 else 0
+        }

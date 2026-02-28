@@ -82,3 +82,38 @@ class BookingService:
         # Mark as cancelled
         update_booking_data = {"status": BookingStatus.cancelled}
         return await self.repo.update(booking, update_booking_data)
+
+    async def update_booking_status(self, booking_id: uuid.UUID, event_id: uuid.UUID, new_status: BookingStatus, organizer_id: uuid.UUID) -> Booking:
+        booking = await self.repo.get(booking_id)
+        if not booking:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Booking not found.")
+            
+        if booking.event_id != event_id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Booking does not belong to the specified event.")
+            
+        event = await self.event_repo.get(event_id)
+        if not event or event.organizer_id != organizer_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update bookings for this event.")
+            
+        if booking.status == new_status:
+            return booking
+            
+        # Capacity management logic
+        old_status_inactive = booking.status in (BookingStatus.cancelled, BookingStatus.refunded)
+        new_status_inactive = new_status in (BookingStatus.cancelled, BookingStatus.refunded)
+        
+        if old_status_inactive and not new_status_inactive:
+            # We are reactivating the booking, need to deduct seats if available
+            if event.available_seats < booking.number_of_seats:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not enough seats available to reactivate this booking.")
+            await self.event_repo.update(event, {"available_seats": event.available_seats - booking.number_of_seats})
+            
+        elif not old_status_inactive and new_status_inactive:
+            # We are cancelling/refunding an active booking, restore seats
+            await self.event_repo.update(event, {"available_seats": event.available_seats + booking.number_of_seats})
+            
+        update_data = {"status": new_status}
+        if new_status == BookingStatus.refunded:
+            update_data["payment_status"] = "refunded" # Requires from app.models.booking import PaymentStatus if used strongly typed. Assuming schema logic handles this. Or we can just explicitly set it if backend aligns.
+            
+        return await self.repo.update(booking, update_data)

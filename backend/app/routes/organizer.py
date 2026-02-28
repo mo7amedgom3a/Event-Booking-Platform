@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 import uuid
 from app.schemas.event import EventResponse
@@ -32,10 +33,30 @@ async def get_event_bookings(
     bookings = await service.get_bookings_by_event(event_id)
     return bookings or []
 
-@router.get("/events/{event_id}/statistics", response_model=EventStatisticsResponse)
+@router.get("/events/statistics", response_model=EventStatisticsResponse)
 async def get_event_statistics(
-    event_id: uuid.UUID,
+    event_id: Optional[uuid.UUID] = None,
     service: EventService = Depends(get_event_service),
     current_user: dict = Depends(get_current_user)
 ):
-    return await service.get_event_statistics(str(event_id), uuid.UUID(current_user["id"]))
+    if event_id:
+        return await service.get_event_statistics(str(event_id), uuid.UUID(current_user["id"]))
+    return await service.get_global_statistics(uuid.UUID(current_user["id"]))
+
+from app.schemas.booking import BookingUpdate
+@router.put("/events/{event_id}/bookings/{booking_id}/status", response_model=BookingResponse)
+async def update_booking_status(
+    event_id: uuid.UUID,
+    booking_id: uuid.UUID,
+    update_data: BookingUpdate,
+    service: BookingService = Depends(get_booking_service),
+    current_user: dict = Depends(get_current_user)
+):
+    if not update_data.status:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Status must be provided")
+    return await service.update_booking_status(
+        booking_id=booking_id,
+        event_id=event_id,
+        new_status=update_data.status,
+        organizer_id=uuid.UUID(current_user["id"])
+    )

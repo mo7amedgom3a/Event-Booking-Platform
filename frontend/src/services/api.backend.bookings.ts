@@ -59,11 +59,29 @@ export const bookingService = {
       id: b.id,
       eventId: b.eventId,
       userId: b.userId,
-      seats: b.number_of_seats,
-      totalPrice: b.total_amount,
+      seats: b.numberOfSeats || b.number_of_seats,
+      totalPrice: b.totalAmount || b.total_amount,
       status: b.status,
-      createdAt: b.created_at,
-      userName: b.user_name || 'Unknown User'
+      createdAt: b.createdAt || b.created_at,
+      userName: b.userName || b.user_name || 'Unknown User'
     }));
   },
+
+  async updateBookingStatus(eventId: string, bookingId: string, status: string): Promise<Booking> {
+    const res = await fetchWithCredentials(`${API_URL}/organizer/events/${eventId}/bookings/${bookingId}/status`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ status })
+    });
+    const b = await handleResponse(res);
+    return {
+      id: b.id,
+      eventId: b.eventId,
+      userId: b.userId,
+      seats: b.numberOfSeats || b.number_of_seats,
+      totalPrice: b.totalAmount || b.total_amount,
+      status: b.status,
+      createdAt: b.createdAt || b.created_at
+    };
+  }
 };

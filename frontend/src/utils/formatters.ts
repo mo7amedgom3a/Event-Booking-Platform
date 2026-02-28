@@ -1,7 +1,7 @@
 import { format, formatDistanceToNow, isPast, differenceInHours } from 'date-fns';
 
-export const formatDate = (date: string) => format(new Date(date), 'EEEE, MMMM d');
-export const formatTime = (date: string) => format(new Date(date), 'h:mm a');
+export const formatDate = (date: string) => date ? format(new Date(date), 'EEEE, MMMM d') : '';
+export const formatTime = (date: string) => date ? format(new Date(date), 'h:mm a') : '';
 export const formatDateTime = (start: string, end?: string) => {
   const s = new Date(start);
   const formatted = `${format(s, 'EEEE, MMMM d')} · ${format(s, 'h:mm a')}`;

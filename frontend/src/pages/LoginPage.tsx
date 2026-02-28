@@ -70,11 +70,7 @@ const LoginPage = () => {
           Don't have an account? <Link to="/register" className="text-primary hover:underline font-medium">Sign Up</Link>
         </p>
 
-        <div className="mt-4 p-3 rounded-md bg-surface text-xs text-muted-foreground">
-          <p className="font-medium mb-1">Demo accounts:</p>
-          <p>alice@example.com / Password1 (User)</p>
-          <p>bob@example.com / Password1 (Organizer)</p>
-        </div>
+        
       </div>
     </div>
   );
