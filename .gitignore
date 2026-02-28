@@ -5,8 +5,6 @@ __pycache__/
 venv/
 ENV/
 env/
-alembic/
-alembic.ini
 # Next.js
 .next/
 out/
