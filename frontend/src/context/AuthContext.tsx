@@ -10,7 +10,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; role: 'user' | 'organizer' }) => Promise<void>;
+  register: (data: { firstName: string; lastName: string; email: string; password: string; role: 'user' | 'organizer' }) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => Promise<void>;
 }
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setState({ user, token, isLoading: false, isAuthenticated: true });
   }, []);
 
-  const register = useCallback(async (data: { name: string; email: string; password: string; role: 'user' | 'organizer' }) => {
+  const register = useCallback(async (data: { firstName: string; lastName: string; email: string; password: string; role: 'user' | 'organizer' }) => {
     const { user, token } = await authService.register(data);
     setState({ user, token, isLoading: false, isAuthenticated: true });
   }, []);

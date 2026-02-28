@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.models.booking import Booking, BookingStatus
 from app.models.event import Event
 from app.repositories.base import BaseRepository
+from sqlalchemy.orm import joinedload
 
 class BookingRepository(BaseRepository[Booking]):
     def __init__(self, session: AsyncSession):
@@ -54,8 +55,18 @@ class BookingRepository(BaseRepository[Booking]):
         return list(result.scalars().all())
 
     async def get_by_event(self, event_id: Any) -> list[Booking]:
-        result = await self.session.execute(select(Booking).filter(Booking.event_id == event_id))
-        return list(result.scalars().all())
+        # Use joinedload to eager load the user and avoid N+1 problems
+        
+        query = select(Booking).options(joinedload(Booking.user)).filter(Booking.event_id == event_id)
+        result = await self.session.execute(query)
+        
+        bookings = []
+        for booking in result.scalars().all():
+            if booking.user:
+                booking.user_name = f"{booking.user.first_name} {booking.user.last_name}".strip() if booking.user.first_name or booking.user.last_name else booking.user.email.split('@')[0]
+            bookings.append(booking)
+            
+        return bookings
 
     async def get_by_reference(self, reference: str) -> Booking | None:
         result = await self.session.execute(select(Booking).filter(Booking.booking_reference == reference))

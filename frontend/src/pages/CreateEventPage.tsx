@@ -6,8 +6,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/common/Loading';
-import { eventService, MOCK_CATEGORIES } from '@/services/api';
+import { eventService } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { useEvents } from '@/context/EventContext';
 import { useToast } from '@/hooks/use-toast';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -21,10 +22,28 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
+  <div>
+    <Label>{label}</Label>
+    <div className="mt-1">{children}</div>
+    {error && <p className="text-destructive text-xs mt-1">{error}</p>}
+  </div>
+);
+
+const LocationPicker = ({ position, setPosition }: { position: {lat: number, lng: number}, setPosition: (pos: {lat: number, lng: number}) => void }) => {
+  useMapEvents({
+    click(e) {
+      setPosition({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return position.lat && position.lng ? <Marker position={[position.lat, position.lng]} /> : null;
+};
+
 const CreateEventPage = () => {
   const { id } = useParams();
   const isEdit = !!id;
   const { user } = useAuth();
+  const { categories } = useEvents();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -111,23 +130,6 @@ const CreateEventPage = () => {
 
   if (loadingEvent) return <div className="container py-16"><Spinner className="h-8 w-8 mx-auto" /></div>;
 
-  const Field = ({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) => (
-    <div>
-      <Label>{label}</Label>
-      <div className="mt-1">{children}</div>
-      {error && <p className="text-destructive text-xs mt-1">{error}</p>}
-    </div>
-  );
-
-  const LocationPicker = () => {
-    useMapEvents({
-      click(e) {
-        setForm(f => ({ ...f, lat: e.latlng.lat, lng: e.latlng.lng }));
-      },
-    });
-    return form.lat && form.lng ? <Marker position={[form.lat, form.lng]} /> : null;
-  };
-
   return (
     <div className="container py-8 max-w-2xl">
       <h1 className="font-display text-3xl font-bold mb-8">{isEdit ? 'Edit Event' : 'Create Event'}</h1>
@@ -146,7 +148,7 @@ const CreateEventPage = () => {
             <Select value={form.category} onValueChange={v => set('category', v)}>
               <SelectTrigger className="bg-surface"><SelectValue /></SelectTrigger>
               <SelectContent>
-                {MOCK_CATEGORIES.map(c => <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>)}
+                {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>)}
               </SelectContent>
             </Select>
           </Field>
@@ -191,7 +193,7 @@ const CreateEventPage = () => {
                 <TileLayer
                   url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
                 />
-                <LocationPicker />
+                <LocationPicker position={{lat: form.lat, lng: form.lng}} setPosition={(pos) => setForm(f => ({...f, lat: pos.lat, lng: pos.lng}))} />
               </MapContainer>
             </div>
             <p className="text-xs text-muted-foreground mt-2">Lat: {form.lat.toFixed(4)}, Lng: {form.lng.toFixed(4)}</p>

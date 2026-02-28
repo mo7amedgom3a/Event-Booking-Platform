@@ -11,7 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { validateEmail, validatePassword, validateName } from '@/utils/validators';
 
 const RegisterPage = () => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
@@ -26,7 +27,8 @@ const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errs: Record<string, string> = {};
-    const nameErr = validateName(name); if (nameErr) errs.name = nameErr;
+    const firstNameErr = validateName(firstName); if (firstNameErr) errs.firstName = firstNameErr;
+    const lastNameErr = validateName(lastName); if (lastNameErr) errs.lastName = lastNameErr;
     const emailErr = validateEmail(email); if (emailErr) errs.email = emailErr;
     const pwErr = validatePassword(password); if (pwErr) errs.password = pwErr;
     if (password !== confirmPw) errs.confirmPw = 'Passwords do not match';
@@ -34,7 +36,7 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      await register({ name, email, password, role });
+      await register({ firstName, lastName, email, password, role });
       toast({ title: 'Account created! Welcome aboard 🎉' });
       navigate('/');
     } catch (err: any) {
@@ -50,10 +52,17 @@ const RegisterPage = () => {
         <p className="text-muted-foreground text-sm mb-6">Join EventHub today</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label>Full Name</Label>
-            <Input value={name} onChange={e => { setName(e.target.value); setErrors({}); }} placeholder="Alice Johnson" className="bg-surface mt-1" />
-            {errors.name && <p className="text-destructive text-xs mt-1">{errors.name}</p>}
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <Label>First Name</Label>
+              <Input value={firstName} onChange={e => { setFirstName(e.target.value); setErrors({}); }} placeholder="Alice" className="bg-surface mt-1" />
+              {errors.firstName && <p className="text-destructive text-xs mt-1">{errors.firstName}</p>}
+            </div>
+            <div className="flex-1">
+              <Label>Last Name</Label>
+              <Input value={lastName} onChange={e => { setLastName(e.target.value); setErrors({}); }} placeholder="Johnson" className="bg-surface mt-1" />
+              {errors.lastName && <p className="text-destructive text-xs mt-1">{errors.lastName}</p>}
+            </div>
           </div>
           <div>
             <Label>Email</Label>

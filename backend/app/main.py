@@ -17,8 +17,13 @@ from contextlib import asynccontextmanager
 from app.database import AsyncSessionLocal
 from app.sb import ServiceBase
 
+from scripts.seed import seed
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Seed the database
+    await seed()
+    
     # Initialize global database session and attach SB object
     async with AsyncSessionLocal() as session:
         app.state.sb = ServiceBase(session)
@@ -72,8 +77,8 @@ app.add_middleware(RateLimitMiddleware, requests_per_minute=100)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=["http://localhost", "http://localhost:80", "http://127.0.0.1:8080"],  # explicit origin is required if credentials=True
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -4,8 +4,9 @@ import { Calendar, MapPin, Tag, User as UserIcon, Minus, Plus } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/common/Loading';
 import Modal from '@/components/common/Modal';
-import { eventService, bookingService, Event, MOCK_CATEGORIES } from '@/services/api';
+import { eventService, bookingService, Event } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { useEvents } from '@/context/EventContext';
 import { formatDateTime, formatPrice, formatCurrency, getAvailabilityColor, isEventPast } from '@/utils/formatters';
 import { useToast } from '@/hooks/use-toast';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -23,6 +24,7 @@ L.Icon.Default.mergeOptions({
 const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
+  const { categories } = useEvents();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [event, setEvent] = useState<Event | null>(null);
@@ -41,8 +43,8 @@ const EventDetailPage = () => {
   if (loading) return <div className="container py-16"><Spinner className="h-8 w-8 mx-auto" /></div>;
   if (!event) return <div className="container py-16 text-center"><h2 className="font-display text-2xl">Event not found</h2></div>;
 
-  const category = MOCK_CATEGORIES.find(c => c.id === event.category);
-  const available = event.totalSeats - event.bookedSeats;
+  const category = categories.find(c => c.id === event.category);
+  const available = event.availableSeats;
   const isSoldOut = available <= 0;
   const isPast = isEventPast(event.date);
   const total = event.price * seats;
@@ -52,7 +54,7 @@ const EventDetailPage = () => {
     setBooking(true);
     try {
       await bookingService.createBooking({ eventId: event.id, userId: user.id, seats });
-      setEvent(prev => prev ? { ...prev, bookedSeats: prev.bookedSeats + seats } : prev);
+      setEvent(prev => prev ? { ...prev, availableSeats: prev.availableSeats - seats } : prev);
       setShowModal(false);
       toast({ title: "You're booked! See you there 🎟️" });
     } catch (err: any) {
@@ -153,7 +155,7 @@ const EventDetailPage = () => {
                 </div>
                 <div className="h-2 w-full rounded-full bg-surface-2 overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${getAvailabilityColor(event.bookedSeats, event.totalSeats)}`}
+                    className={`h-full rounded-full transition-all ${getAvailabilityColor(available, event.totalSeats)}`}
                     style={{ width: `${(available / event.totalSeats) * 100}%` }}
                   />
                 </div>

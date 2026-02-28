@@ -24,16 +24,15 @@ export const canCancelBooking = (eventDate: string) =>
 
 export const timeUntil = (date: string) => formatDistanceToNow(new Date(date), { addSuffix: true });
 
-export const getAvailabilityColor = (booked: number, total: number) => {
-  const pct = booked / total;
-  if (pct >= 1) return 'bg-muted-foreground';
-  if (pct >= 0.9) return 'bg-destructive';
-  if (pct >= 0.5) return 'bg-accent';
+export const getAvailabilityColor = (available: number, total: number) => {
+  const pct = available / total;
+  if (pct <= 0) return 'bg-muted-foreground';
+  if (pct <= 0.1) return 'bg-destructive';
+  if (pct <= 0.5) return 'bg-accent';
   return 'bg-success';
 };
 
-export const getAvailabilityLabel = (booked: number, total: number) => {
-  const available = total - booked;
+export const getAvailabilityLabel = (available: number, total: number) => {
   if (available <= 0) return 'Sold Out';
   if (available <= total * 0.1) return `Only ${available} left!`;
   return `${available} seats available`;

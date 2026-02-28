@@ -39,6 +39,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: event_booking_frontend
+    env_file:
+      - ./frontend/.env
     ports:
       - "80:80"
     depends_on:

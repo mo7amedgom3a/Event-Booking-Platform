@@ -208,6 +208,10 @@ components:
         updatedAt:
           type: string
           format: date-time
+        userName:
+          type: string
+          example: "John Doe"
+          description: "Populated when retrieved for an event organizer"
           
     Category:
       type: object

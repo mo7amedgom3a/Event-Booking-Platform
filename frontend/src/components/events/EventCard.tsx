@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin } from 'lucide-react';
-import { Event, MOCK_CATEGORIES } from '@/services/api';
+import { Event } from '@/services/api';
+import { useEvents } from '@/context/EventContext';
 import { formatDate, formatPrice, getAvailabilityColor, getAvailabilityLabel } from '@/utils/formatters';
 
 interface EventCardProps {
@@ -9,8 +10,9 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event, view = 'grid' }: EventCardProps) => {
-  const category = MOCK_CATEGORIES.find(c => c.id === event.category);
-  const isSoldOut = event.bookedSeats >= event.totalSeats;
+  const { categories } = useEvents();
+  const category = categories.find(c => c.id === event.category);
+  const isSoldOut = event.availableSeats <= 0;
 
   if (view === 'list') {
     return (
@@ -29,8 +31,8 @@ const EventCard = ({ event, view = 'grid' }: EventCardProps) => {
         <div className="flex flex-col items-end justify-between flex-shrink-0">
           <span className={`font-bold text-lg ${event.price === 0 ? 'text-success' : 'text-foreground'}`}>{formatPrice(event.price)}</span>
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className={`h-2 w-2 rounded-full ${getAvailabilityColor(event.bookedSeats, event.totalSeats)}`} />
-            {getAvailabilityLabel(event.bookedSeats, event.totalSeats)}
+            <span className={`h-2 w-2 rounded-full ${getAvailabilityColor(event.availableSeats, event.totalSeats)}`} />
+            {getAvailabilityLabel(event.availableSeats, event.totalSeats)}
           </span>
         </div>
       </Link>
@@ -67,8 +69,8 @@ const EventCard = ({ event, view = 'grid' }: EventCardProps) => {
             {formatPrice(event.price)}
           </span>
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className={`h-2 w-2 rounded-full ${getAvailabilityColor(event.bookedSeats, event.totalSeats)}`} />
-            {getAvailabilityLabel(event.bookedSeats, event.totalSeats)}
+            <span className={`h-2 w-2 rounded-full ${getAvailabilityColor(event.availableSeats, event.totalSeats)}`} />
+            {getAvailabilityLabel(event.availableSeats, event.totalSeats)}
           </span>
         </div>
       </div>

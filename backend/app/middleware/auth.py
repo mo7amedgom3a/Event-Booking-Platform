@@ -11,8 +11,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
         request.state.user = None
         
         auth_header = request.headers.get("Authorization")
+        token = None
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
+        elif "access_token" in request.cookies:
+            token = request.cookies.get("access_token")
+
+        if token:
             try:
                 payload = decode_access_token(token)
                 user_id = payload.get("sub")

@@ -46,7 +46,7 @@ const OrganizerDashboard = () => {
   if (loading) return <div className="container py-16"><Spinner className="h-8 w-8 mx-auto" /></div>;
 
   const totalBookings = recentBookings.length;
-  const totalRevenue = events.reduce((sum, e) => sum + e.price * e.bookedSeats, 0);
+  const totalRevenue = events.reduce((sum, e) => sum + e.price * (e.totalSeats - e.availableSeats), 0);
   const upcoming = events.filter(e => !isEventPast(e.date)).length;
 
   const stats = [
@@ -106,7 +106,7 @@ const OrganizerDashboard = () => {
                           <Link to={`/events/${e.id}`} className="hover:text-primary transition-colors">{e.title}</Link>
                         </td>
                         <td className="p-3 text-muted-foreground">{formatDate(e.date)}</td>
-                        <td className="p-3 text-muted-foreground">{e.bookedSeats}/{e.totalSeats}</td>
+                        <td className="p-3 text-muted-foreground">{e.totalSeats - e.availableSeats}/{e.totalSeats}</td>
                         <td className="p-3">
                           <span className={`text-xs px-2 py-0.5 rounded-full ${isEventPast(e.date) ? 'bg-muted text-muted-foreground' : 'bg-success/20 text-success'}`}>
                             {isEventPast(e.date) ? 'Past' : 'Active'}
