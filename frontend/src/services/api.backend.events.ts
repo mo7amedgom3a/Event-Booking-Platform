@@ -35,6 +35,7 @@ export const eventService = {
     if (filters.city) params.append('city', filters.city);
     if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
     if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
+    if (filters.freeOnly !== undefined) params.append('isFree', filters.freeOnly.toString());
     if (filters.search) params.append('search', filters.search);
     if (filters.sort) {
       if (filters.sort === 'price-asc') { params.append('sortBy', 'price'); params.append('order', 'asc'); }

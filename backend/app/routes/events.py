@@ -19,6 +19,7 @@ async def get_events(
                  endDate: Optional[str] = None,
                  minPrice: Optional[float] = None,
                  maxPrice: Optional[float] = None,
+                 isFree: Optional[bool] = None,
                  status: Optional[str] = None,
                  search: Optional[str] = None,
                  sortBy: Optional[str] = "startDateTime",
@@ -29,7 +30,7 @@ async def get_events(
     events, total_count = await service.get_all_events(
         skip=skip, limit=limit, city=city, category_id=categoryId, status=status, search=search,
         start_date=startDate, end_date=endDate, min_price=minPrice, max_price=maxPrice,
-        sort_by=sortBy, order=order
+        is_free=isFree, sort_by=sortBy, order=order
     )
     
     import math

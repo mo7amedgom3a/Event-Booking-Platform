@@ -18,6 +18,7 @@ class EventRepository(BaseRepository[Event]):
         end_date: Optional[str] = None,
         min_price: Optional[float] = None,
         max_price: Optional[float] = None,
+        is_free: Optional[bool] = None,
         status: Optional[str] = None,
         search: Optional[str] = None,
         sort_by: Optional[str] = "startDateTime",
@@ -58,6 +59,8 @@ class EventRepository(BaseRepository[Event]):
             conditions.append(Event.price >= min_price)
         if max_price is not None:
             conditions.append(Event.price <= max_price)
+        if is_free:
+            conditions.append(Event.price == 0)
             
         if conditions:
             query = query.filter(and_(*conditions))

@@ -16,13 +16,15 @@ async def test_get_with_filters(event_repo, mock_session):
     mock_result = MagicMock()
     mock_events = [Event(title="Event 1"), Event(title="Event 2")]
     mock_result.scalars().all.return_value = mock_events
+    mock_result.scalar.return_value = 2
     mock_session.execute.return_value = mock_result
 
     # we pass some filters to ensure coverage runs over them (actual query building is mocked out)
-    result = await event_repo.get_with_filters(city="Cairo", category_id="cat-id", status="published", search="Tech")
+    results, count = await event_repo.get_with_filters(city="Cairo", category_id="cat-id", status="published", search="Tech")
 
-    assert result == mock_events
-    mock_session.execute.assert_called_once()
+    assert results == mock_events
+    assert count == 2
+    assert mock_session.execute.call_count == 2
     
 @pytest.mark.asyncio
 async def test_get_by_organizer(event_repo, mock_session):

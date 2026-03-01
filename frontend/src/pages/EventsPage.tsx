@@ -63,7 +63,8 @@ const EventsPage = () => {
       <div>
         <h3 className="font-body font-semibold text-sm mb-3">Price Range</h3>
         <Slider
-          defaultValue={[0]}
+          key={filters.maxPrice ?? 500}
+          defaultValue={[filters.maxPrice ?? 500]}
           max={500}
           step={10}
           onValueCommit={([v]) => setFilter('maxPrice', v === 500 ? undefined : v)}
