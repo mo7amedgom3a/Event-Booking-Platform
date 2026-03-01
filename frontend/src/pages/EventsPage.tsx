@@ -16,6 +16,7 @@ const EventsPage = () => {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [searchInput, setSearchInput] = useState('');
   const [mobileFilters, setMobileFilters] = useState(false);
+  const [localPrice, setLocalPrice] = useState(filters.maxPrice ?? 500);
 
   // Sync URL params on mount
   useEffect(() => {
@@ -31,6 +32,21 @@ const EventsPage = () => {
     const timer = setTimeout(() => setFilter('search', searchInput), 300);
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  // Sync local price on mount / external change
+  useEffect(() => {
+    if (filters.maxPrice !== undefined && filters.maxPrice !== localPrice) {
+       setLocalPrice(filters.maxPrice);
+    }
+  }, [filters.maxPrice]);
+
+  // Debounced price filter
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilter('maxPrice', localPrice === 500 ? undefined : localPrice);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [localPrice]);
 
   const FilterSidebar = () => (
     <div className="space-y-6">
@@ -61,13 +77,18 @@ const EventsPage = () => {
       </div>
 
       <div>
-        <h3 className="font-body font-semibold text-sm mb-3">Price Range</h3>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-body font-semibold text-sm">Price Range</h3>
+          <span className="text-sm font-medium text-primary">
+            Up to ${localPrice === 500 ? '500+' : localPrice}
+          </span>
+        </div>
         <Slider
           key={filters.maxPrice ?? 500}
-          defaultValue={[filters.maxPrice ?? 500]}
+          value={[localPrice]}
           max={500}
           step={10}
-          onValueCommit={([v]) => setFilter('maxPrice', v === 500 ? undefined : v)}
+          onValueChange={([v]) => setLocalPrice(v)}
           className="mt-2"
         />
         <div className="flex justify-between text-xs text-muted-foreground mt-1">
