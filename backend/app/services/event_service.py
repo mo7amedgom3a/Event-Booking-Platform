@@ -19,7 +19,7 @@ class EventService:
                              search: Optional[str] = None,
                              start_date: Optional[str] = None, end_date: Optional[str] = None,
                              min_price: Optional[float] = None, max_price: Optional[float] = None,
-                             sort_by: Optional[str] = "startDateTime", order: Optional[str] = "asc") -> list[Event]:
+                             sort_by: Optional[str] = "startDateTime", order: Optional[str] = "asc") -> tuple[list[Event], int]:
         return await self.repo.get_with_filters(
             skip=skip, limit=limit, city=city, category_id=category_id, 
             status=status, search=search,

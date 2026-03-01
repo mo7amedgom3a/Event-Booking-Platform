@@ -39,6 +39,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const [result, categories] = await Promise.all([
         eventService.getEvents(state.filters),
         state.categories.length ? Promise.resolve(state.categories) : eventService.getCategories(),
+        new Promise(resolve => setTimeout(resolve, 1500))
       ]);
       setState(s => ({
         ...s,

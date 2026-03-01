@@ -23,6 +23,7 @@ const EventsPage = () => {
     const q = searchParams.get('search');
     if (cat) setFilter('category', cat);
     if (q) { setFilter('search', q); setSearchInput(q); }
+    setFilter('limit', 3);
   }, []);
 
   // Debounced search
@@ -145,7 +146,7 @@ const EventsPage = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-8">
-              <Button variant="outline" size="sm" disabled={filters.page === 1} onClick={() => setPage((filters.page || 1) - 1)}>Previous</Button>
+              <Button variant="outline" size="sm" disabled={filters.page === 1} onClick={() => setPage((filters.page || 1) - 1)}>←</Button>
               {Array.from({ length: totalPages }).map((_, i) => (
                 <Button
                   key={i}
@@ -157,7 +158,7 @@ const EventsPage = () => {
                   {i + 1}
                 </Button>
               ))}
-              <Button variant="outline" size="sm" disabled={filters.page === totalPages} onClick={() => setPage((filters.page || 1) + 1)}>Next</Button>
+              <Button variant="outline" size="sm" disabled={filters.page === totalPages} onClick={() => setPage((filters.page || 1) + 1)}>→</Button>
             </div>
           )}
         </div>

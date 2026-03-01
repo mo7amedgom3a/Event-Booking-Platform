@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Calendar, MapPin, Tag, User as UserIcon, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/common/Loading';
@@ -67,6 +67,11 @@ const EventDetailPage = () => {
     <div>
       {/* Banner */}
       <div className="relative h-64 md:h-96 overflow-hidden">
+        <div className="absolute top-4 left-4 z-20 md:top-6 md:left-6">
+          <Link to="/events" className="inline-flex items-center text-primary bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-background transition-colors text-sm font-medium border border-border shadow-md">
+            ← Back to Events
+          </Link>
+        </div>
         <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
       </div>

@@ -26,15 +26,18 @@ async def get_events(
                  service: EventService = Depends(get_event_service)
                  ):
     skip = (page - 1) * limit
-    events = await service.get_all_events(
+    events, total_count = await service.get_all_events(
         skip=skip, limit=limit, city=city, category_id=categoryId, status=status, search=search,
         start_date=startDate, end_date=endDate, min_price=minPrice, max_price=maxPrice,
         sort_by=sortBy, order=order
     )
     
+    import math
+    total_pages = math.ceil(total_count / limit) if total_count > 0 else 1
+    
     return {
         "events": events or [],
-        "pagination": {"total": len(events) if events else 0, "page": page, "limit": limit, "totalPages": 1}
+        "pagination": {"total": total_count, "page": page, "limit": limit, "totalPages": total_pages}
     }
 
 @router.get("/{event_id}", response_model=EventResponse)

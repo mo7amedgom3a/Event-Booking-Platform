@@ -22,8 +22,9 @@ class EventRepository(BaseRepository[Event]):
         search: Optional[str] = None,
         sort_by: Optional[str] = "startDateTime",
         order: Optional[str] = "asc",
-    ) -> list[Event]:
+    ) -> tuple[list[Event], int]:
         query = select(Event)
+        from sqlalchemy import func
         
         conditions = []
         if city:
@@ -74,10 +75,17 @@ class EventRepository(BaseRepository[Event]):
         else:
             query = query.order_by(sort_col.asc())
             
+        count_query = select(func.count(Event.id))
+        if conditions:
+            count_query = count_query.filter(and_(*conditions))
+        
+        total_res = await self.session.execute(count_query)
+        total_count = total_res.scalar() or 0
+
         query = query.offset(skip).limit(limit)
         result = await self.session.execute(query)
         results = result.scalars().all()
-        return list(results)
+        return list(results), total_count
 
     async def get_by_organizer(self, organizer_id: Any, status: Optional[str] = None) -> list[Event]:
         query = select(Event).filter(Event.organizer_id == organizer_id)
