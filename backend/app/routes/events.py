@@ -12,7 +12,7 @@ router = APIRouter(prefix="/events", tags=["Events"])
 @router.get("", response_model=EventListResponse)
 async def get_events(
                  page: int = Query(1, ge=1),
-                 limit: int = Query(10, ge=1, le=100),
+                 limit: int = Query(3, ge=1, le=100),
                  city: Optional[str] = None,
                  categoryId: Optional[str] = None,
                  startDate: Optional[str] = None,

@@ -30,7 +30,7 @@ export const eventService = {
   async getEvents(filters: EventFilters = {}): Promise<{ events: Event[]; total: number; totalPages: number }> {
     const params = new URLSearchParams();
     if (filters.page) params.append('page', filters.page.toString());
-    if (filters.limit) params.append('limit', filters.limit.toString());
+    if (filters.limit) params.append('limit', '3');
     if (filters.category) params.append('categoryId', filters.category);
     if (filters.city) params.append('city', filters.city);
     if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
@@ -138,10 +138,10 @@ export const eventService = {
   },
 
   async getOrganizerEvents(organizerId: string): Promise<Event[]> {
-    // Currently no native endpoint or parameter exists in Swagger, so fetch events manually.
-    const res = await fetchWithCredentials(`${API_URL}/events?limit=100`, { headers: getHeaders() });
+    const res = await fetchWithCredentials(`${API_URL}/organizer/events`, { headers: getHeaders() });
     const data = await handleResponse(res);
-    return (data.events || []).map(mapEvent).filter((e: Event) => e.organizerId === organizerId);
+    const eventsList = Array.isArray(data) ? data : (data.events || []);
+    return eventsList.map(mapEvent);
   },
 
   async getOrganizerStatistics(eventId?: string): Promise<{ total_bookings: number, revenue: number, attendance_rate: number }> {
