@@ -47,7 +47,7 @@ export interface Booking {
   userId: string;
   seats: number;
   totalPrice: number;
-  status: 'confirmed' | 'cancelled';
+  status: 'confirmed' | 'cancelled' | 'pending';
   createdAt: string;
 }
 

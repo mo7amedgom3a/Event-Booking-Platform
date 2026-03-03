@@ -61,7 +61,7 @@ class BookingService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Associated event not found.")
             
         # Business rule: Cannot cancel if event is in the past
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        now = datetime.now(timezone.utc)
         if event.start_date_time < now:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

@@ -8,6 +8,7 @@ const statusColors: Record<string, string> = {
   confirmed: 'bg-success/20 text-success',
   cancelled: 'bg-destructive/20 text-destructive',
   past: 'bg-muted text-muted-foreground',
+  pending: 'bg-primary/20 text-primary',
 };
 
 interface BookingCardProps {
@@ -17,8 +18,8 @@ interface BookingCardProps {
 
 export const BookingCard = ({ booking, onCancelClick }: BookingCardProps) => {
   const isPast = booking.event ? isEventPast(booking.event.date) : false;
-  const canCancel = booking.status === 'confirmed' && !isPast && booking.event && canCancelBooking(booking.event.date);
-  const status = isPast && booking.status === 'confirmed' ? 'past' : booking.status;
+  const canCancel = booking.status !== 'cancelled' && !isPast && booking.event && canCancelBooking(booking.event.date);
+  const status = isPast && booking.status !== 'cancelled' ? 'past' : booking.status;
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 rounded-lg border border-border bg-card p-4">
