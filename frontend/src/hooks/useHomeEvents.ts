@@ -10,7 +10,7 @@ export const useHomeEvents = () => {
     const fetchHomeData = async () => {
       try {
         const [eventsResponse, categoriesResponse] = await Promise.all([
-          eventService.getEvents(),
+          eventService.getEvents({ limit: 10 }),
           eventService.getCategories()
         ]);
         

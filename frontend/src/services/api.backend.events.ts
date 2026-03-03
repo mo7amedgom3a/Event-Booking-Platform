@@ -30,7 +30,7 @@ export const eventService = {
   async getEvents(filters: EventFilters = {}): Promise<{ events: Event[]; total: number; totalPages: number }> {
     const params = new URLSearchParams();
     if (filters.page) params.append('page', filters.page.toString());
-    if (filters.limit) params.append('limit', '3');
+    if (filters.limit) params.append('limit', filters.limit.toString());
     if (filters.category) params.append('categoryId', filters.category);
     if (filters.city) params.append('city', filters.city);
     if (filters.minPrice !== undefined) params.append('minPrice', filters.minPrice.toString());
