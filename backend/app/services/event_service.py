@@ -45,10 +45,10 @@ class EventService:
         # When creating, available seats equal capacity
         event_data["available_seats"] = event_in.capacity
         
-        if event_data.get("start_date_time") and event_data["start_date_time"].tzinfo:
-            event_data["start_date_time"] = event_data["start_date_time"].astimezone(timezone.utc).replace(tzinfo=None)
-        if event_data.get("end_date_time") and event_data["end_date_time"].tzinfo:
-            event_data["end_date_time"] = event_data["end_date_time"].astimezone(timezone.utc).replace(tzinfo=None)
+        if event_data.get("start_date_time"):
+            event_data["start_date_time"] = event_data["start_date_time"].astimezone(timezone.utc) if event_data["start_date_time"].tzinfo else event_data["start_date_time"].replace(tzinfo=timezone.utc)
+        if event_data.get("end_date_time"):
+            event_data["end_date_time"] = event_data["end_date_time"].astimezone(timezone.utc) if event_data["end_date_time"].tzinfo else event_data["end_date_time"].replace(tzinfo=timezone.utc)
             
         # Extract location data for flat DB model
         if "location" in event_data:
@@ -70,16 +70,17 @@ class EventService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this event.")
             
         # Cannot update past events
-        now_dt = datetime.now(timezone.utc).replace(tzinfo=None)
-        if event.start_date_time < now_dt:
+        now_dt = datetime.now(timezone.utc)
+        event_start = event.start_date_time.astimezone(timezone.utc) if event.start_date_time.tzinfo else event.start_date_time.replace(tzinfo=timezone.utc)
+        if event_start < now_dt:
              raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot update events that have already started.")
 
         update_data = event_in.model_dump(exclude_unset=True)
         
-        if update_data.get("start_date_time") and update_data["start_date_time"].tzinfo:
-            update_data["start_date_time"] = update_data["start_date_time"].astimezone(timezone.utc).replace(tzinfo=None)
-        if update_data.get("end_date_time") and update_data["end_date_time"].tzinfo:
-            update_data["end_date_time"] = update_data["end_date_time"].astimezone(timezone.utc).replace(tzinfo=None)
+        if update_data.get("start_date_time"):
+            update_data["start_date_time"] = update_data["start_date_time"].astimezone(timezone.utc) if update_data["start_date_time"].tzinfo else update_data["start_date_time"].replace(tzinfo=timezone.utc)
+        if update_data.get("end_date_time"):
+            update_data["end_date_time"] = update_data["end_date_time"].astimezone(timezone.utc) if update_data["end_date_time"].tzinfo else update_data["end_date_time"].replace(tzinfo=timezone.utc)
             
         if "location" in update_data:
             loc = update_data.pop("location")

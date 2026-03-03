@@ -88,9 +88,10 @@ const EventDetailPage = () => {
 
             <h1 className="font-display text-3xl md:text-5xl font-black mb-4">{event.title}</h1>
 
-            <div className="flex flex-wrap gap-4 text-muted-foreground mb-6">
-              <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" />{formatDateTime(event.date, event.endDate)}</span>
-              <span className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />{event.location.venue}, {event.location.city}</span>
+            <div className="flex flex-col gap-2 text-muted-foreground mb-6">
+              <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> <strong>Start Date:</strong> {formatDateTime(event.date)}</span>
+              {event.endDate && <span className="flex items-center gap-2"><Calendar className="h-4 w-4 text-primary" /> <strong>End Date:</strong> {formatDateTime(event.endDate)}</span>}
+              <span className="flex items-center gap-2 mt-2"><MapPin className="h-4 w-4 text-primary" />{event.location.venue}, {event.location.city}</span>
             </div>
 
             {/* Description */}

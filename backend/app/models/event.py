@@ -1,7 +1,7 @@
 import uuid
 import enum
 from datetime import datetime
-from sqlalchemy import String, Text, ForeignKey, Numeric, Integer, Enum
+from sqlalchemy import String, Text, ForeignKey, Numeric, Integer, Enum, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
@@ -27,8 +27,8 @@ class Event(Base, TimestampMixin):
     location_lat: Mapped[float | None] = mapped_column(Numeric(10, 8))
     location_lon: Mapped[float | None] = mapped_column(Numeric(11, 8))
     
-    start_date_time: Mapped[datetime]
-    end_date_time: Mapped[datetime]
+    start_date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    end_date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     capacity: Mapped[int] = mapped_column(Integer)
     available_seats: Mapped[int] = mapped_column(Integer)
     price: Mapped[float] = mapped_column(Numeric(10, 2))
