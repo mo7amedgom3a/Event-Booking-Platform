@@ -1,43 +1,19 @@
-import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/common/Loading';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { validateEmail } from '@/utils/validators';
+import { useLoginForm } from '@/hooks/useAuthForms';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errs: Record<string, string> = {};
-    const emailErr = validateEmail(email);
-    if (emailErr) errs.email = emailErr;
-    if (!password) errs.password = 'Password is required';
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-
-    setLoading(true);
-    try {
-      await login(email, password);
-      toast({ title: `Welcome back! 👋` });
-      navigate(params.get('redirect') || '/');
-    } catch (err: any) {
-      toast({ title: 'Login failed', description: err.message, variant: 'destructive' });
-    }
-    setLoading(false);
-  };
+  const {
+    email, setEmail,
+    password, setPassword,
+    showPassword: showPw, setShowPassword: setShowPw,
+    loading, errors, setErrors,
+    handleSubmit
+  } = useLoginForm();
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 gradient-mesh">

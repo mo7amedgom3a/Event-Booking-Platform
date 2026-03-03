@@ -1,12 +1,14 @@
 import { Booking, Event } from './types';
 import { API_URL, getHeaders, handleResponse, fetchWithCredentials } from './api.backend.utils';
+import { eventService } from './api.backend.events';
 
 export const bookingService = {
   async getBookings(userId: string): Promise<(Booking & { event?: Event })[]> {
     const res = await fetchWithCredentials(`${API_URL}/bookings`, { headers: getHeaders() });
     const data = await handleResponse(res);
+    
     // Expand with event if backend does not return it inline
-    return data.map((b: any) => ({
+    const bookings = data.map((b: any) => ({
       id: b.id,
       eventId: b.eventId,
       userId: b.userId,
@@ -15,6 +17,13 @@ export const bookingService = {
       status: b.status,
       createdAt: b.createdAt,
     }));
+
+    return Promise.all(
+      bookings.map(async (booking: any) => {
+        const event = await eventService.getEvent(booking.eventId);
+        return { ...booking, event: event || undefined };
+      })
+    );
   },
 
   async createBooking(data: { eventId: string; userId: string; seats: number }): Promise<Booking> {

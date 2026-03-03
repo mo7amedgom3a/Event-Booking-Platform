@@ -1,31 +1,19 @@
-import { useState } from 'react';
 import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/common/Loading';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import { useProfileForm } from '@/hooks/useAuthForms';
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
-  const { toast } = useToast();
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [avatar, setAvatar] = useState(user?.avatar || '');
-  const [saving, setSaving] = useState(false);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      await updateProfile({ name, email, avatar });
-      toast({ title: 'Profile updated!' });
-    } catch (err: any) {
-      toast({ title: 'Error', description: err.message, variant: 'destructive' });
-    }
-    setSaving(false);
-  };
+  const {
+    user,
+    name, setName,
+    email, setEmail,
+    avatar, setAvatar,
+    saving,
+    handleSave
+  } = useProfileForm();
 
   if (!user) return null;
 

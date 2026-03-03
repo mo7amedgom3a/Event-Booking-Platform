@@ -8,29 +8,20 @@ import EventCard from '@/components/events/EventCard';
 import { EventCardSkeleton } from '@/components/common/Loading';
 import { eventService, Event, Category } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
+import { useHomeEvents } from '@/hooks/useHomeEvents';
 
 const HomePage = () => {
-  const [search, setSearch] = useState('');
-  const [featured, setFeatured] = useState<Event[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    Promise.all([
-      eventService.getEvents({ sort: 'popular', limit: 6 }),
-      eventService.getCategories(),
-    ]).then(([res, cats]) => {
-      setFeatured(res.events);
-      setCategories(cats);
-      setLoading(false);
-    });
-  }, []);
+  const { featuredEvents: featured, categories, loading } = useHomeEvents();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (search.trim()) navigate(`/events?search=${encodeURIComponent(search)}`);
+    if (search.trim()) {
+      navigate(`/events?search=${encodeURIComponent(search)}`);
+    }
   };
 
   const steps = [

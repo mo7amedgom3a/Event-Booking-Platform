@@ -1,67 +1,41 @@
-import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Calendar, MapPin, Tag, User as UserIcon, Minus, Plus } from 'lucide-react';
+import { Calendar, MapPin, Tag, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/common/Loading';
 import Modal from '@/components/common/Modal';
-import { eventService, bookingService, Event } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { useEvents } from '@/context/EventContext';
-import { formatDateTime, formatPrice, formatCurrency, getAvailabilityColor, isEventPast } from '@/utils/formatters';
-import { useToast } from '@/hooks/use-toast';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { formatDateTime, formatCurrency, isEventPast } from '@/utils/formatters';
+import { useEventDetail } from '@/hooks/useEventDetail';
 
-// Fix marker icon issue in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import { EventLocationMap } from '@/components/events/EventLocationMap';
+import { BookingSidebar } from '@/components/events/BookingSidebar';
 
 const EventDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user, isAuthenticated } = useAuth();
   const { categories } = useEvents();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [event, setEvent] = useState<Event | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [seats, setSeats] = useState(1);
-  const [booking, setBooking] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    if (id) {
-      eventService.getEvent(id).then(e => { setEvent(e); setLoading(false); });
-    }
-  }, [id]);
+  
+  const {
+    event,
+    loading,
+    seats,
+    setSeats,
+    booking,
+    showModal,
+    setShowModal,
+    expanded,
+    setExpanded,
+    handleBook
+  } = useEventDetail(id);
 
   if (loading) return <div className="container py-16"><Spinner className="h-8 w-8 mx-auto" /></div>;
   if (!event) return <div className="container py-16 text-center"><h2 className="font-display text-2xl">Event not found</h2></div>;
 
   const category = categories.find(c => c.id === event.category);
-  const available = event.availableSeats;
-  const isSoldOut = available <= 0;
   const isPast = isEventPast(event.date);
   const total = event.price * seats;
-
-  const handleBook = async () => {
-    if (!user) return;
-    setBooking(true);
-    try {
-      await bookingService.createBooking({ eventId: event.id, userId: user.id, seats });
-      setEvent(prev => prev ? { ...prev, availableSeats: prev.availableSeats - seats } : prev);
-      setShowModal(false);
-      toast({ title: "You're booked! See you there 🎟️" });
-    } catch (err: any) {
-      toast({ title: 'Booking failed', description: err.message, variant: 'destructive' });
-    }
-    setBooking(false);
-  };
 
   return (
     <div>
@@ -122,16 +96,7 @@ const EventDetailPage = () => {
               <p className="text-muted-foreground text-sm mb-4">{event.location.address}</p>
               {event.location.lat && event.location.lng && (
                 <div className="h-48 w-full rounded-md overflow-hidden border border-border">
-                  <MapContainer center={[event.location.lat, event.location.lng]} zoom={14} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
-                    <TileLayer
-                      attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-                      url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-                    />
-                    <TileLayer
-                      url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
-                    />
-                    <Marker position={[event.location.lat, event.location.lng]} />
-                  </MapContainer>
+                  <EventLocationMap lat={event.location.lat} lng={event.location.lng} />
                 </div>
               )}
             </div>
@@ -149,55 +114,13 @@ const EventDetailPage = () => {
           </div>
 
           {/* Booking sidebar */}
-          <div className="lg:w-96 flex-shrink-0">
-            <div className="lg:sticky lg:top-24 rounded-lg border border-border bg-card p-6">
-              <div className="text-3xl font-bold mb-4">{event.price === 0 ? <span className="text-success">FREE</span> : formatCurrency(event.price)}</div>
-
-              {/* Availability bar */}
-              <div className="mb-4">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="text-muted-foreground">Availability</span>
-                  <span className="font-medium">{available} / {event.totalSeats}</span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-surface-2 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${getAvailabilityColor(available, event.totalSeats)}`}
-                    style={{ width: `${(available / event.totalSeats) * 100}%` }}
-                  />
-                </div>
-              </div>
-
-              {!isPast && !isSoldOut && (
-                <>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-medium">Seats</span>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setSeats(Math.max(1, seats - 1))} className="h-8 w-8 rounded-md border border-border flex items-center justify-center hover:bg-surface transition-colors"><Minus className="h-4 w-4" /></button>
-                      <span className="font-bold w-8 text-center">{seats}</span>
-                      <button onClick={() => setSeats(Math.min(available, seats + 1))} className="h-8 w-8 rounded-md border border-border flex items-center justify-center hover:bg-surface transition-colors"><Plus className="h-4 w-4" /></button>
-                    </div>
-                  </div>
-
-                  {event.price > 0 && (
-                    <div className="flex justify-between mb-4 text-sm">
-                      <span className="text-muted-foreground">{formatCurrency(event.price)} × {seats}</span>
-                      <span className="font-bold text-lg">{formatCurrency(total)}</span>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {!isAuthenticated ? (
-                <Button className="w-full" size="lg" onClick={() => navigate(`/login?redirect=/events/${event.id}`)}>Login to Book</Button>
-              ) : isPast ? (
-                <Button className="w-full" size="lg" disabled>Event Ended</Button>
-              ) : isSoldOut ? (
-                <Button className="w-full" size="lg" disabled>Sold Out</Button>
-              ) : (
-                <Button className="w-full" size="lg" onClick={() => setShowModal(true)}>Book Now</Button>
-              )}
-            </div>
-          </div>
+          <BookingSidebar 
+            event={event} 
+            seats={seats} 
+            setSeats={setSeats} 
+            isAuthenticated={isAuthenticated} 
+            setShowModal={setShowModal} 
+          />
         </div>
       </div>
 

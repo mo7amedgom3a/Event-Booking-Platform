@@ -1,49 +1,24 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/common/Loading';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { validateEmail, validatePassword, validateName } from '@/utils/validators';
+import { useRegisterForm } from '@/hooks/useAuthForms';
 
 const RegisterPage = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPw, setConfirmPw] = useState('');
-  const [role, setRole] = useState<'user' | 'organizer'>('user');
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const { register } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errs: Record<string, string> = {};
-    const firstNameErr = validateName(firstName); if (firstNameErr) errs.firstName = firstNameErr;
-    const lastNameErr = validateName(lastName); if (lastNameErr) errs.lastName = lastNameErr;
-    const emailErr = validateEmail(email); if (emailErr) errs.email = emailErr;
-    const pwErr = validatePassword(password); if (pwErr) errs.password = pwErr;
-    if (password !== confirmPw) errs.confirmPw = 'Passwords do not match';
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-
-    setLoading(true);
-    try {
-      await register({ firstName, lastName, email, password, role });
-      toast({ title: 'Account created! Welcome aboard 🎉' });
-      navigate('/');
-    } catch (err: any) {
-      toast({ title: 'Registration failed', description: err.message, variant: 'destructive' });
-    }
-    setLoading(false);
-  };
+  const {
+    firstName, setFirstName,
+    lastName, setLastName,
+    email, setEmail,
+    password, setPassword,
+    confirmPw, setConfirmPw,
+    role, setRole,
+    showPw, setShowPw,
+    loading, errors, setErrors,
+    handleSubmit
+  } = useRegisterForm();
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 gradient-mesh">

@@ -37,3 +37,14 @@ export const getAvailabilityLabel = (available: number, total: number) => {
   if (available <= total * 0.1) return `Only ${available} left!`;
   return `${available} seats available`;
 };
+
+export const getTimeString = (d: Date) => {
+  if (isNaN(d.getTime())) return "12:00 AM";
+  const hours = d.getHours();
+  const mins = d.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const h12 = hours % 12 || 12;
+  return `${h12 < 10 && ampm === 'PM' ? '0' + h12 : (h12 < 10 && h12 !== 0 ? h12.toString() : h12.toString())}:${mins === 0 ? '00' : '30'} ${ampm}`;
+};
+
+export const timeToId = (t: string) => t.toLowerCase().replace(/[: ]/g, '-');
