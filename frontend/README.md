@@ -6,20 +6,29 @@ This repository directory contains the React/Vite-based frontend module for the 
 
 ```text
 frontend/
-├── public/               # Static assets (images, generic config files)
+├── public/                 # Static assets (images, generic config files)
 └── src/
-    ├── components/       # Presentational components and primitive UI slices (shadcn)
-    ├── context/          # React Context providers (AuthContext, etc.)
-    ├── hooks/            # Custom reusable React hooks (useAuth, useEvents)
-    ├── lib/              # Utility functions, validators, and formatters
-    ├── pages/            # View components that correspond to app routes
-    ├── services/         # Services containing API endpoints wrappers (axios/fetch)
-    ├── App.tsx           # Global application layout and route registry
-    ├── index.css         # Global tailwind styles
-    └── main.tsx          # Application entry point binding React to the DOM
-├── package.json          # Dependencies and script definitions
-├── vite.config.ts        # Vite configuration
-└── tailwind.config.ts    # Tailwind CSS and theme overrides
+    ├── components/         # Reusable structural and UI components
+    │   ├── bookings/       # Booking-specific components (e.g., BookingCard)
+    │   ├── common/         # Generic application components (Loading, Modal)
+    │   ├── dashboard/      # Organizer dashboard components (Tables, StatCards)
+    │   ├── events/         # Event-specific components (Maps, Filters, Sidebars)
+    │   ├── form/           # Reusable form field wrappers and pickers
+    │   ├── layout/         # High-level layout wrappers (Header, Footer)
+    │   ├── routes/         # Routing definition wrappers (Protected Routes)
+    │   └── ui/             # Shadcn primitives and base UI elements
+    ├── context/            # React Context providers (AuthContext, EventContext)
+    ├── hooks/              # Custom reusable React hooks (useAuth, useAPI forms)
+    ├── lib/                # Third-party library initializations/wrappers (utils/twMerge)
+    ├── pages/              # View components that correspond to app routes
+    ├── services/           # Services containing API endpoints wrappers (axios/fetch)
+    ├── utils/              # Pure utility functions, validators, and formatters
+    ├── App.tsx             # Global application layout and route registry
+    ├── index.css           # Global tailwind styles
+    └── main.tsx            # Application entry point binding React to the DOM
+├── package.json            # Dependencies and script definitions
+├── vite.config.ts          # Vite configuration
+└── tailwind.config.ts      # Tailwind CSS and theme overrides
 ```
 
 ## Main Packages Used
